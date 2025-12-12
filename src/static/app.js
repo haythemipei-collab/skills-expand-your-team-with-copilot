@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("darkMode", "enabled");
       darkModeIcon.textContent = "☀️";
     } else {
-      localStorage.setItem("darkMode", "disabled");
+      localStorage.removeItem("darkMode");
       darkModeIcon.textContent = "🌙";
     }
   }
