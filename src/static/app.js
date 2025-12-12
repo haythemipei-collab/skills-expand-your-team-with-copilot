@@ -472,6 +472,53 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Helper function to escape HTML to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Function to generate share URL and text
+  function generateShareData(activityName, activityDetails) {
+    const formattedSchedule = formatSchedule(activityDetails);
+    const shareText = `Check out ${activityName} at Mergington High School! ${activityDetails.description} Schedule: ${formattedSchedule}`;
+    const shareUrl = window.location.href;
+    
+    return { shareText, shareUrl };
+  }
+
+  // Function to handle social sharing
+  function handleShare(platform, activityName, activityDetails) {
+    const { shareText, shareUrl } = generateShareData(activityName, activityDetails);
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedText = encodeURIComponent(shareText);
+    
+    let shareLink = '';
+    
+    switch(platform) {
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        break;
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+        break;
+      case 'linkedin':
+        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+      case 'email':
+        const subject = encodeURIComponent(`Check out ${activityName} at Mergington High School`);
+        shareLink = `mailto:?subject=${subject}&body=${encodedText}`;
+        break;
+    }
+    
+    if (platform === 'email') {
+      window.location.href = shareLink;
+    } else {
+      window.open(shareLink, '_blank', 'width=600,height=400');
+    }
+  }
+
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
@@ -519,6 +566,26 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    // Create social sharing buttons
+    const escapedName = escapeHtml(name);
+    const shareButtonsHtml = `
+      <div class="share-buttons">
+        <span class="share-label">Share:</span>
+        <button class="share-btn facebook-share" data-activity="${escapedName}" title="Share on Facebook">
+          <span class="share-icon">f</span>
+        </button>
+        <button class="share-btn twitter-share" data-activity="${escapedName}" title="Share on Twitter">
+          <span class="share-icon">X</span>
+        </button>
+        <button class="share-btn linkedin-share" data-activity="${escapedName}" title="Share on LinkedIn">
+          <span class="share-icon">in</span>
+        </button>
+        <button class="share-btn email-share" data-activity="${escapedName}" title="Share via Email">
+          <span class="share-icon">@</span>
+        </button>
+      </div>
+    `;
+
     activityCard.innerHTML = `
       ${tagHtml}
       <h4>${name}</h4>
@@ -528,6 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      ${shareButtonsHtml}
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -586,6 +654,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handlers for share buttons
+    const facebookBtn = activityCard.querySelector(".facebook-share");
+    const twitterBtn = activityCard.querySelector(".twitter-share");
+    const linkedinBtn = activityCard.querySelector(".linkedin-share");
+    const emailBtn = activityCard.querySelector(".email-share");
+
+    facebookBtn.addEventListener("click", () => handleShare("facebook", name, details));
+    twitterBtn.addEventListener("click", () => handleShare("twitter", name, details));
+    linkedinBtn.addEventListener("click", () => handleShare("linkedin", name, details));
+    emailBtn.addEventListener("click", () => handleShare("email", name, details));
 
     activitiesList.appendChild(activityCard);
   }
