@@ -472,6 +472,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Helper function to escape HTML to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   // Function to generate share URL and text
   function generateShareData(activityName, activityDetails) {
     const formattedSchedule = formatSchedule(activityDetails);
@@ -560,20 +567,21 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     // Create social sharing buttons
+    const escapedName = escapeHtml(name);
     const shareButtonsHtml = `
       <div class="share-buttons">
         <span class="share-label">Share:</span>
-        <button class="share-btn facebook-share" data-activity="${name}" title="Share on Facebook">
+        <button class="share-btn facebook-share" data-activity="${escapedName}" title="Share on Facebook">
           <span class="share-icon">f</span>
         </button>
-        <button class="share-btn twitter-share" data-activity="${name}" title="Share on Twitter">
-          <span class="share-icon">𝕏</span>
+        <button class="share-btn twitter-share" data-activity="${escapedName}" title="Share on Twitter">
+          <span class="share-icon">X</span>
         </button>
-        <button class="share-btn linkedin-share" data-activity="${name}" title="Share on LinkedIn">
+        <button class="share-btn linkedin-share" data-activity="${escapedName}" title="Share on LinkedIn">
           <span class="share-icon">in</span>
         </button>
-        <button class="share-btn email-share" data-activity="${name}" title="Share via Email">
-          <span class="share-icon">✉</span>
+        <button class="share-btn email-share" data-activity="${escapedName}" title="Share via Email">
+          <span class="share-icon">@</span>
         </button>
       </div>
     `;
